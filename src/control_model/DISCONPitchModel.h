@@ -186,7 +186,7 @@ namespace turbine_core {
 
                 Quaternion<real_t> quatX(Vector3<real_t>(1,0,0), real_t(0));
                 Quaternion<real_t> quatY(Vector3<real_t>(0,1,0), real_t(0));
-                Quaternion<real_t> quatZ(Vector3<real_t>(0,0,1), pitchCommanded-previousPitch_);
+                Quaternion<real_t> quatZ(Vector3<real_t>(0,0,1), previousPitch_-pitchCommanded);
                 auto product = quatX * quatY * quatZ;
                 discretisation->updateRelativeOrientation(product);
                 previousPitch_ = pitchCommanded;
