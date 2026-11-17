@@ -20,11 +20,12 @@ from lbmpy.turbulence_models import SubgridScaleModel
 
 from pystencils_walberla import CodeGeneration, generate_info_header, generate_sweep, generate_nonuniform_pack_info_for_field
 from lbmpy_walberla import generate_lbm_package, lbm_boundary_generator, RefinementScaling
-from lbmpy_walberla.additional_data_handler import OutflowAdditionalDataHandler, WFBAdditionalDataHandler
+from lbmpy_walberla.additional_data_handler import OutflowAdditionalDataHandler
 
 from lbmpy.relaxationrates import *
 
 from codegen_walberla_wind import generate_flow_driver_collection
+from codegen_walberla_wind.wall_function import WallLinkWFBAdditionalDataHandler
 
 info_header = """
 
@@ -190,8 +191,8 @@ with CodeGeneration() as ctx:
                                 data_type=data_type)
     wfb = lbm_boundary_generator(class_name='waLBerlaWind_WFB', flag_uid=wfb_uid,
                                  boundary_object=wfb_bc,
-                                 additional_data_handler=WFBAdditionalDataHandler(lb_method.stencil, wfb_bc,
-                                                                                  velocity_field, target=target))
+                                 additional_data_handler=WallLinkWFBAdditionalDataHandler(lb_method.stencil, wfb_bc,
+                                                                                          velocity_field, target=target))
     
 
     uniform_ubb = lbm_boundary_generator(class_name='waLBerlaWind_UniformUBB', flag_uid=uniform_inflow_uid,
