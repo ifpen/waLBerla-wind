@@ -37,6 +37,7 @@ Parameters
     
     referenceHeight_LU $refHeight;    
     samplingHeight_LU  $samplingHeight;
+    velocityFilterWidth   1e-3;
 
     roughnessLengthRatio $z0;                // z0 / zHub / C_l
     kappa 0.42;
