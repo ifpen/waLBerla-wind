@@ -5,6 +5,15 @@ on:
     branches: [ main ]
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_long_tests:
+        description: 'Do you want to run the long tests?'
+        required: true
+        default: 'false'
+        type: boolean
+  schedule:
+    # 59th minute, 23rd hour, any day of the month, any month, and 5 for Friday (0=Sunday, 5=Friday)
+    - cron: '59 23 * * 3'
 
 jobs:
   build-and-test:
@@ -79,7 +88,24 @@ jobs:
 
           make -j $(nproc --all) 2>&1 | tee ./build.log
 
-      - name: Test
+      - name: Test (short)
+        if: github.event_name != 'schedule' && github.event.inputs.run_long_tests != 'true'
+        run: |
+          export PATH="/usr/lib64/openmpi/bin:${PATH}"
+          export LD_LIBRARY_PATH="/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH}"
+          source .venv/bin/activate
+
+          cd build
+
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export FI_PROVIDER=sockets
+
+          ctest --output-on-failure -L "walberlawind::nonRegressionTests"
+
+      - name: Test (long)
+        if: github.event_name == 'schedule' || github.event.inputs.run_long_tests == 'true'
         run: |
           export PATH="/usr/lib64/openmpi/bin:${PATH}"
           export LD_LIBRARY_PATH="/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH}"
