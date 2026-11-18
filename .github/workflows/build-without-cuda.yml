@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-and-test:
+    timeout-minutes: 600
     runs-on: ubuntu-latest
     container:
       image: rockylinux/rockylinux:9
