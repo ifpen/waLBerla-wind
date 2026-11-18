@@ -12,11 +12,12 @@ from lbmpy.advanced_streaming.utility import is_inplace
 
 from pystencils_walberla import CodeGeneration, generate_info_header, generate_sweep
 from lbmpy_walberla import generate_lbm_package, lbm_boundary_generator
-from lbmpy_walberla.additional_data_handler import OutflowAdditionalDataHandler, WFBAdditionalDataHandler
+from lbmpy_walberla.additional_data_handler import OutflowAdditionalDataHandler
 
 from lbmpy.relaxationrates import *
 
 from codegen_walberla_wind import generate_flow_driver_collection
+from codegen_walberla_wind.wall_function import WallLinkWFBAdditionalDataHandler
 
 info_header = """
 
@@ -169,7 +170,7 @@ with CodeGeneration() as ctx:
                                 data_type=data_type)
     wfb = lbm_boundary_generator(class_name='waLBerlaWind_WFB', flag_uid=wfb_uid,
                                  boundary_object=wfb_bc,
-                                 additional_data_handler=WFBAdditionalDataHandler(lb_method.stencil, wfb_bc, velocity_field, target=target))
+                                 additional_data_handler=WallLinkWFBAdditionalDataHandler(lb_method.stencil, wfb_bc, velocity_field, target=target))
 
     uniform_ubb = lbm_boundary_generator(class_name='waLBerlaWind_UniformUBB', flag_uid=uniform_inflow_uid,
                                  boundary_object=UBB(velocity=[sp.Symbol("u_x"), sp.Symbol("u_y"), sp.Symbol("u_z")],
