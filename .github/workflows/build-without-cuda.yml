@@ -13,7 +13,7 @@ on:
         type: boolean
   schedule:
     # 59th minute, 23rd hour, any day of the month, any month, and 5 for Friday (0=Sunday, 5=Friday)
-    - cron: '59 23 * * 3'
+    - cron: '59 23 * * 5'
 
 jobs:
   build-and-test:
