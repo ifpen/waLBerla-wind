@@ -154,7 +154,7 @@ namespace turbine_core {
                         if (wallType_ == WallSetup::NoSlip)
                             handling->forceBoundary(NoSlipFlagUID, bottom);
                         if (wallType_ == WallSetup::WFB)
-                            handling->forceBoundary(WFBFlagUID, top);
+                            handling->forceBoundary(WFBFlagUID, bottom);
                         handling->forceBoundary(SymmetryFlagUID, top);
                         break;
                     case EnvironmentSetup::FreeSlip:
