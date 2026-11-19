@@ -26,23 +26,24 @@ def logProfile(z, uRef, z0):
     z0 = 0.1/1500.*40.
     return uRef/0.42*np.log(z/z0)
 
-delta          = 1500
-deltaLU        = 50
+delta          = 1500 # Domain height in (m)
 
 velocityLU = 0.05773502691896259
 velocitySI = 10.
 toPhysical = velocitySI/velocityLU
 G = velocitySI
 
-files = ['../NeutralABL_Andren_Files/Precursor_VTK_Out_v2_50/field_writer_727461/simulation_step_1454922.pvti']
-nSamples = ['727461']
+files = ['../NeutralABL_Andren_Files/Precursor_VTK_Out_v2_30/field_writer_436476/simulation_step_872952.pvti']# , '../NeutralABL_Andren_Files/Precursor_VTK_Out_v2_50/field_writer_727461/simulation_step_1454922.pvti']
+nSamples = ['436476']#, '727461']
+deltaLUs        = [30]#, 50]
+
 shapes = ['-', '--', '-.', ':']
 
 f, ax = plt.subplots(ncols=6, figsize=(18,4), sharey=True, constrained_layout=True)
 fLM, axLM = plt.subplots(ncols=1, figsize=(5.5,5), constrained_layout=True)
 
 
-for nSample, sh, file in zip(nSamples, shapes, files):
+for deltaLU, nSample, sh, file in zip(deltaLUs, nSamples, shapes, files):
     
     data = pyvista.get_reader(file).read()
     centers = vtk_to_numpy(data.cell_centers().GetPoints().GetData())
@@ -68,8 +69,9 @@ for nSample, sh, file in zip(nSamples, shapes, files):
     zLBM = centers[idx, 2] / deltaLU
     velH = np.hypot(meanVel[:, 0], meanVel[:, 1])
 
+    indices = np.where((zLBM >= 0.1) & (zLBM <= 0.5))[0]
     poptInflow, _ = curve_fit(
-        logProfile, centers[idx, 2][5:], vel[idx, 0][5:],
+        logProfile, centers[idx, 2][indices], vel[idx, 0][indices],
         p0=[0.4, 1e-3],
     )
     uStarLBM = poptInflow[0]

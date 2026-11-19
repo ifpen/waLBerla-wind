@@ -19,7 +19,7 @@ heightPhy      = 1500                # Physical, in (m)
 widthPhy       = 1290
 lengthPhy      = 1290
 
-heightLU       = 50                  # 
+heightLU       = 30                  # 
 
 wind           = 10.0                # Physical, in (m/s), Velocity at height z=900m
 refHeightPhy   = 1500.
