@@ -229,7 +229,8 @@ namespace turbine_core {
                 return cpuDescription;
             }
 
-            template<bool isGPU>
+#ifdef WALBERLA_BUILD_WITH_GPU_SUPPORT
+	    template<bool isGPU>
             HOST_PREFIX Description createFinalDescription(const Description & cpuDescription, char(*)[isGPU == true] = nullptr) {
                 auto & nPoints = cpuDescription.nPoints;
 
@@ -248,7 +249,7 @@ namespace turbine_core {
                 // copy data
                 memcpy(gpuDescription.positions, cpuDescription.positions, (nPoints+2)*sizeof(Vector3<real_t>));
                 memcpy(gpuDescription.angles, cpuDescription.angles, (nPoints+2)*sizeof(Vector3<real_t>));
-                gpuMemcpy(&gpuDescription.widths[0], &cpuDescription.widths[0], nPoints*sizeof(real_t), gpuMemcpyHostToDevice);
+		gpuMemcpy(&gpuDescription.widths[0], &cpuDescription.widths[0], nPoints*sizeof(real_t), gpuMemcpyHostToDevice);
                 // gpuMemcpy(&gpuDescription.airfoilPolars[0], &cpuDescription.airfoilPolars[0], nPoints*sizeof(aerodynamics::AirfoilPolar), gpuMemcpyHostToDevice);
 
                 for (uint_t i = 0; i < nPoints; ++i) {
@@ -262,7 +263,7 @@ namespace turbine_core {
 
                 return gpuDescription;
             }
-
+#endif
             template<bool isGPU>
             HOST_PREFIX void freeDescription(Description & description, char(*)[isGPU == false] = nullptr) {
                 free(description.positions);

@@ -1,15 +1,17 @@
 # waLBerla-wind
 
-waLBerla-wind is an extension of [waLBerla](https://i10git.cs.fau.de/walberla/walberla) for wind energy applications.
+waLBerla-wind is an extension of [waLBerla](https://gitos.rrze.fau.de/cs10/walberla/walberla) for wind energy applications.
 
 # Getting started
 
 Being an extension of waLBerla, waLBerla-wind comes with the same minumum requirements: a C++-17-compliant compiler, an MPI library, and the [CMake](http://www.cmake.org/) build system. If you want to run simulations on GPUs, you need an additional CUDA installation.  
-Lastly, as waLBerla-wind relies heavily on code generation, you will also need a Python installation. For the required Python version, please check in [pystencils](https://i10git.cs.fau.de/pycodegen/pystencils) or [lbmpy](https://i10git.cs.fau.de/pycodegen/lbmpy). At the time of writing, this is Python 3.10.
+Lastly, as waLBerla-wind relies heavily on code generation, you will also need a Python installation. For the required Python version, please check in [pystencils](https://gitos.rrze.fau.de/cs10/pycodegen/pystencils) or [lbmpy](https://gitos.rrze.fau.de/cs10/pycodegen/lbmpy). At the time of writing, this is Python 3.12.
 
 ## Preparation
 
-To successfully build waLBerla-wind, you will need to download waLBerla from [gitlab](https://i10git.cs.fau.de/walberla/walberla) and install pystencils and lbmpy. Hints for the installation can be found in their corresponding README file in gitlab.
+To successfully build waLBerla-wind, you will need to download waLBerla from [gitlab](https://gitos.rrze.fau.de/cs10/walberla/walberla) and install pystencils and lbmpy [gitlab](https://gitos.rrze.fau.de/cs10/pycodegen). Hints for the installation can be found in their corresponding README file in gitlab. 
+
+For this version of waBerla-wind, please use release/1.4 for both pystencils and lbmpy.
 
 ## CMake
 
@@ -21,10 +23,10 @@ The first step is to create the build folder and enter it via
 
 In the build folder, you call CMake to build your project. For this, you must add certain options with `-D(Option)=(Value)`. The recommended minimal setup is
 ```cmake
-cmake .. -DWALBERLA_DIR=/path/to/walberla/repository
-         -DPython_ROOT_DIR=/path/to/python/installation
-         -DWALBERLA_BUILD_WITH_CODEGEN=ON
-         -DWALBERLA_BUILD_WITH_PYTHON=ON
+cmake .. -DWALBERLA_DIR=/path/to/walberla/repository \
+         -DPython_ROOT_DIR=/path/to/python/installation \
+         -DWALBERLA_BUILD_WITH_CODEGEN=ON \
+         -DWALBERLA_BUILD_WITH_PYTHON=ON \
 ```
 Note that the `Python_ROOT_DIR` option is not necessary if you use the system's default Python installation.  
 
