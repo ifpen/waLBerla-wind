@@ -14,7 +14,7 @@ instVelPrecursor  = dataPrecursor["Velocity"]
 refMeanInstVel     = 0.018655121
 refMeanMeanVel     = 0.018785393
 refMeanSOP         = 0.0036025066
-refMeanForce       = -4.2234407-07
+refMeanForce       = -4.2234407e-07
 refMeanPrecInstVel = 0.018723397
 
 errorMeanInstVel     = np.linalg.norm(refMeanInstVel - np.mean(instVelConcurrent[:,:]))
