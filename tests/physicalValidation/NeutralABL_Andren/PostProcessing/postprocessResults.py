@@ -188,7 +188,7 @@ error = np.linalg.norm(wlbWind_results-referenceData)
 print('Error: ', error, '%')
 
 succes = True
-epsilon = 1e-2
+epsilon = 2e-3
 if(error > epsilon):
     print('Computed error on the mean profiles (', error, ') is higher than threshold of ', epsilon)
     succes = False
