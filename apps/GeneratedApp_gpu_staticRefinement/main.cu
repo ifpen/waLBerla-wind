@@ -416,6 +416,8 @@ namespace turbine_core {
             walberla::gpu::fieldCpy<ThirdOrderTensorField_T, GPUField_T<real_t>>( blocks, sumOfCubesFieldCpuID, sumOfCubesFieldGpuID );
             walberla::gpu::fieldCpy<ScalarField_T, GPUField_T<real_t>>( blocks, eddyViscosityFieldCpuID, eddyViscosityFieldGpuID );
             walberla::gpu::fieldCpy<SecondOrderTensorField_T, GPUField_T<real_t>>( blocks, strainRateFieldCpuID, strainRateFieldGpuID );
+            walberla::gpu::fieldCpy<ScalarField_T, GPUField_T<real_t>>( blocks, meanEddyViscosityFieldCpuID, meanEddyViscosityFieldGpuID );
+            walberla::gpu::fieldCpy<SecondOrderTensorField_T, GPUField_T<real_t>>( blocks, meanStrainRateFieldCpuID, meanStrainRateFieldGpuID );
 
             gpuDeviceSynchronize();
         });
@@ -448,65 +450,6 @@ namespace turbine_core {
                                                                           uint_t(welfordOutputSweep.getCounter()), meanVelocityFieldCpuID, sumOfSquaresFieldCpuID, sumOfCubesFieldCpuID);
                           }
                           }, "Snapshot creation");
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t){
-                           	if(welfordInterval && (uint_t(welfordOutputSweep.getCounter()) % welfordInterval == 0)){
-                           		welfordOutputSweep.setCounter(real_t(1));
-                           		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
-                           			auto dst = blockIt->getData<GPUField_T<real_t>>( meanVelocityFieldGpuID );
-                           			const auto src = blockIt->getData<GPUField_T<real_t>>( velocityFieldGpuID );
-                           			gpu::fieldCopy( dst, src );
-                           			welfordOutputSosResetter(blockIt.get());
-                           			welfordOutputSocResetter(blockIt.get());
-                           		}
-                           	} else {
-                           		welfordOutputSweep.setCounter(real_t(welfordOutputSweep.getCounter() + 1));
-                           	}
-                           }, "Welford Output Sweep");
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t level) {
-        std::vector<walberla::Block* > blocksOnLevel;
-        blocks->getBlocks(blocksOnLevel, level);
-        for (auto block: blocksOnLevel) {
-        	welfordOutputLambda(block);
-        }}, "Welford Output Sweep");
-
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t){
-                           	if(welfordInterval && (uint_t(welfordEddyViscositySweep.getCounter()) % welfordInterval == 0)){
-                           		welfordEddyViscositySweep.setCounter(real_t(1));
-                           		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
-                           			auto dst = blockIt->getData<GPUField_T<real_t>>( meanEddyViscosityFieldGpuID );
-                           			const auto src = blockIt->getData<GPUField_T<real_t>>( eddyViscosityFieldGpuID );
-                           			gpu::fieldCopy( dst, src );
-                           		}
-                           	} else {
-                           		welfordEddyViscositySweep.setCounter(real_t(welfordEddyViscositySweep.getCounter() + 1));
-                           	}
-                           }, "Welford Eddy Viscosity Sweep");
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t level) {
-        std::vector<walberla::Block* > blocksOnLevel;
-        blocks->getBlocks(blocksOnLevel, level);
-        for (auto block: blocksOnLevel) {
-        	welfordEddyViscosityLambda(block);
-        }}, "Welford Eddy Viscosity Sweep");
-
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t){
-                           	if(welfordInterval && (uint_t(welfordStrainRateSweep.getCounter()) % welfordInterval == 0)){
-                           		welfordStrainRateSweep.setCounter(real_t(1));
-                           		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
-                           			auto dst = blockIt->getData<GPUField_T<real_t>>( meanStrainRateFieldGpuID );
-                           			const auto src = blockIt->getData<GPUField_T<real_t>>( strainRateFieldGpuID );
-                           			gpu::fieldCopy( dst, src );
-                           		}
-                           	} else {
-                           		welfordStrainRateSweep.setCounter(real_t(welfordStrainRateSweep.getCounter() + 1));
-                           	}
-                           }, "Welford Strain Rate Sweep");
-        	recursiveTimestep.addPostCollisionFunction([&](uint_t level) {
-        std::vector<walberla::Block* > blocksOnLevel;
-        blocks->getBlocks(blocksOnLevel, level);
-        for (auto block: blocksOnLevel) {
-        	welfordStrainRateLambda(block);
-        }}, "Welford Strain Rate Sweep");
-
         recursiveTimestep.addPostCollisionFunction([&](uint_t) { farm.callback(Component::Function::UPDATE_DISCRETISATION); }, "Rotation");
         recursiveTimestep.addPostCollisionFunction([&](uint_t level) {
         std::vector<walberla::Block* > blocksOnLevel;
@@ -536,6 +479,54 @@ namespace turbine_core {
         recursiveTimestep.addPostCollisionFunction([&](uint_t) { farm.callback(Component::Function::RESET_COMMUNICATION_DATA); }, "Reset communication data");
 
         recursiveTimestep.addRefinementToTimeLoop( timeloop );
+
+        timeloop.addFuncAfterTimeStep( [&]() {
+        	if(welfordInterval && (uint_t(welfordOutputSweep.getCounter()) % welfordInterval == 0)){
+        		welfordOutputSweep.setCounter(real_t(1));
+        		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
+        			auto dst = blockIt->getData<GPUField_T<real_t>>( meanVelocityFieldGpuID );
+        			const auto src = blockIt->getData<GPUField_T<real_t>>( velocityFieldGpuID );
+        			gpu::fieldCopy( dst, src );
+        			welfordOutputSosResetter(blockIt.get());
+        			welfordOutputSocResetter(blockIt.get());
+        		}
+        	} else {
+        		welfordOutputSweep.setCounter(real_t(welfordOutputSweep.getCounter() + 1));
+        	}
+        	for ( auto & block : *blocks ) {
+        		welfordOutputLambda(&block);
+        	}
+        }, "Welford Output Sweep" );
+        timeloop.addFuncAfterTimeStep( [&]() {
+        	if(welfordInterval && (uint_t(welfordEddyViscositySweep.getCounter()) % welfordInterval == 0)){
+        		welfordEddyViscositySweep.setCounter(real_t(1));
+        		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
+        			auto dst = blockIt->getData<GPUField_T<real_t>>( meanEddyViscosityFieldGpuID );
+        			const auto src = blockIt->getData<GPUField_T<real_t>>( eddyViscosityFieldGpuID );
+        			gpu::fieldCopy( dst, src );
+        		}
+        	} else {
+        		welfordEddyViscositySweep.setCounter(real_t(welfordEddyViscositySweep.getCounter() + 1));
+        	}
+        	for ( auto & block : *blocks ) {
+        		welfordEddyViscosityLambda(&block);
+        	}
+        }, "Welford Eddy Viscosity Sweep" );
+        timeloop.addFuncAfterTimeStep( [&]() {
+        	if(welfordInterval && (uint_t(welfordStrainRateSweep.getCounter()) % welfordInterval == 0)){
+        		welfordStrainRateSweep.setCounter(real_t(1));
+        		for ( auto blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt ) {
+        			auto dst = blockIt->getData<GPUField_T<real_t>>( meanStrainRateFieldGpuID );
+        			const auto src = blockIt->getData<GPUField_T<real_t>>( strainRateFieldGpuID );
+        			gpu::fieldCopy( dst, src );
+        		}
+        	} else {
+        		welfordStrainRateSweep.setCounter(real_t(welfordStrainRateSweep.getCounter() + 1));
+        	}
+        	for ( auto & block : *blocks ) {
+        		welfordStrainRateLambda(&block);
+        	}
+        }, "Welford Strain Rate Sweep" );
 
         // LBM stability check
         timeloop.addFuncAfterTimeStep( walberla::makeSharedFunctor( walberla::field::makeStabilityChecker< PdfField_T, FlagField_T >(globalConfig, blocks, pdfFieldCpuID, flagFieldID, FluidFlagUID )), "LBM stability check" );

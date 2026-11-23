@@ -67,8 +67,12 @@ namespace walberla {
 
                 {{data_type}} windDirection = parameters.getParameter<{{data_type}}>("windDirectionDegrees", {{data_type}}(0));
                 windDirection *= turbine_core::math::pi / real_t(180);
+                // the kernels only need cos/sin of the wind direction -> evaluate them once here instead of per cell
+                const {{data_type}} cosWindDirection = std::cos(windDirection);
+                const {{data_type}} sinWindDirection = std::sin(windDirection);
 
                 {% if dynamic -%}
+                windDirection_ = windDirection;
                 {{data_type}} windDirectionRate{0};
                 if (driverType_ == turbine_core::external_forces::DriverSetup::DynamicPressureGradient) {
                     const std::string windDirChangeRateTable = parameters.getParameter<std::string>("windDirectionChangeRateTable", "");
@@ -104,7 +108,9 @@ namespace walberla {
                     {%- if driver_enum == "DynamicPressureGradient" %}
                         auto windDirChangeRate = windDirChangeRateInterpolator_({{data_type}}(timeloop_->getCurrentTimeStep()));
                         {{collection_object_name}}->setWinddirectionrate(windDirChangeRate);
-                        {{collection_object_name}}->setWinddirection({{collection_object_name}}->getWinddirection() + windDirChangeRate);
+                        windDirection_ += windDirChangeRate;
+                        {{collection_object_name}}->setCoswinddirection(std::cos(windDirection_));
+                        {{collection_object_name}}->setSinwinddirection(std::sin(windDirection_));
                     {%- endif %}
                         {{collection_object_name}}->{{driver_class}}(block, ghostLayers_); break; }
                     {% endfor %}
@@ -123,7 +129,9 @@ namespace walberla {
                     {%- if driver_enum == "DynamicPressureGradient" %}
                         auto windDirChangeRate = windDirChangeRateInterpolator_({{data_type}}(timeloop_->getCurrentTimeStep()));
                         {{collection_object_name}}->setWinddirectionrate(windDirChangeRate);
-                        {{collection_object_name}}->setWinddirection({{collection_object_name}}->getWinddirection() + windDirChangeRate);
+                        windDirection_ += windDirChangeRate;
+                        {{collection_object_name}}->setCoswinddirection(std::cos(windDirection_));
+                        {{collection_object_name}}->setSinwinddirection(std::sin(windDirection_));
                     {%- endif %}
                         {{collection_object_name}}->{{driver_class}}CellInterval(block, globalCellInterval); break; }
                     {% endfor %}
@@ -154,6 +162,7 @@ namespace walberla {
 
             {% if dynamic %}
             timeloop::ITimeloop * const timeloop_{};
+            {{data_type}} windDirection_{};
             turbine_core::data_interpolation::DataInterpolator<real_t, real_t, false> windDirChangeRateInterpolator_{};
             {% endif %}
 

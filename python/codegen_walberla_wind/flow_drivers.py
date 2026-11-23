@@ -60,7 +60,9 @@ class PressureGradient(AbstractFlowDriver):
                  **kwargs):
         super(PressureGradient, self).__init__(force_field, flow_direction, vertical_direction, scaling_factor)
         self._pressure_gradient = sp.symbols(f"pressureGradient")
-        self._wind_direction = sp.Symbol( "windDirection")
+        # cos/sin of the wind direction are kernel parameters, computed once on the host before the kernel launch
+        self._cos_wind_direction = sp.Symbol("cosWindDirection")
+        self._sin_wind_direction = sp.Symbol("sinWindDirection")
 
     def __call__(self, *args, **kwargs):
 
@@ -70,8 +72,8 @@ class PressureGradient(AbstractFlowDriver):
 
         assignments = list()
 
-        assignments.append(ps.Assignment(self._force_field.at_index(x), sp.cos(self._wind_direction) * self._pressure_gradient * self._scaling_factor))
-        assignments.append(ps.Assignment(self._force_field.at_index(y), sp.sin(self._wind_direction) * self._pressure_gradient * self._scaling_factor))
+        assignments.append(ps.Assignment(self._force_field.at_index(x), self._cos_wind_direction * self._pressure_gradient * self._scaling_factor))
+        assignments.append(ps.Assignment(self._force_field.at_index(y), self._sin_wind_direction * self._pressure_gradient * self._scaling_factor))
         assignments.append(ps.Assignment(self._force_field.at_index(z), sp.Float(0)))
 
         return assignments
@@ -81,8 +83,12 @@ class PressureGradient(AbstractFlowDriver):
         return self._pressure_gradient
 
     @property
-    def wind_direction(self):
-        return self._wind_direction
+    def cos_wind_direction(self):
+        return self._cos_wind_direction
+
+    @property
+    def sin_wind_direction(self):
+        return self._sin_wind_direction
 
 
 class DynamicPressureGradient(PressureGradient):
@@ -112,11 +118,11 @@ class DynamicPressureGradient(PressureGradient):
 
         assignments.append(ps.Assignment(
             self._force_field.at_index(x),
-            (sp.cos(self._wind_direction) * self._pressure_gradient
+            (self._cos_wind_direction * self._pressure_gradient
             - sp.Rational(1, 2) * self._wind_direction_rate * self._velocity_field.at_index(y)) * self._scaling_factor))
         assignments.append(ps.Assignment(
             self._force_field.at_index(y),
-            (sp.sin(self._wind_direction) * self._pressure_gradient
+            (self._sin_wind_direction * self._pressure_gradient
             + sp.Rational(1, 2) * self._wind_direction_rate * self._velocity_field.at_index(x)) * self._scaling_factor))
         assignments.append(ps.Assignment(self._force_field.at_index(z), sp.Float(0)))
 

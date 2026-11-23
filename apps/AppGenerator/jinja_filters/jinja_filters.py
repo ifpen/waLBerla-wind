@@ -428,6 +428,11 @@ def generate_output_before_functions(target: Target, vtk_output: bool, field_map
             if Fields.STRAIN_RATE in field_map:
                 result.append(indent + device_to_host_field_copy(Fields.STRAIN_RATE))
 
+            if Fields.MEAN_EDDY_VISCOSITY in field_map:
+                result.append(indent + device_to_host_field_copy(Fields.MEAN_EDDY_VISCOSITY))
+            if Fields.MEAN_STRAIN_RATE in field_map:
+                result.append(indent + device_to_host_field_copy(Fields.MEAN_STRAIN_RATE))
+
         result.append(f"\n{indent}gpuDeviceSynchronize();")
 
         result.append("});")
