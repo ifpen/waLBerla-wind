@@ -1,0 +1,90 @@
+DomainSetup
+{
+    domainSize    < $xDom, $yDom, $zDom>;   
+    
+    loadSnapshot            $LOADSNAP;
+    storeSnapshot           $STORESNAP;
+    snapshotFrequency       $nstepsLBM;
+    snapshotBaseFolder snapsnap;
+    snapshotConfigFile config.snap;
+    welfordFile welford.snap;
+    snapshotBlockforestFile blockForest.snap;
+    snapshotPdfFile pdfs.snap;
+    snapshotForceFile forces.snap;
+    snapshotMeanVelFile meanU.snap;
+    snapshotSOPFile SOP.snap;
+    
+}
+
+Parameters
+{
+    initialVelocity < $uLBM, 0, 0 >;
+    timesteps              $nstepsLBM;
+
+    length_SI              $lSI;
+    length_LU              $lLBM;
+
+    velocity_SI            $uSI;
+    velocity_LU            $uLBM;
+
+    viscosity_SI           $viscositySI;
+    density_SI             $densitySI;
+
+    gaussianSigma     2.0;
+
+    useGui 0;
+    remainingTimeLoggerFrequency 5; // in seconds
+    
+    referenceHeight_LU $refHeight;    
+    samplingHeight_LU  $samplingHeight;
+    velocityFilterWidth   1e-3;
+
+    roughnessLengthRatio $z0;                // z0 / zHub / C_l
+    kappa 0.42;
+
+    coriolisFrequency   1e-4; //-1;
+    geostrophicWind <$geoWind, 0., 0.>;
+
+    driverType  coriolis; // coriolis;    // pressureGradient    
+}
+
+Initialisation {
+    type asmuth;
+    initialVelocity <$uLBM, 0, 0>;
+}
+
+Boundaries
+{
+    setup                   Open;
+
+    inflowType              ShiftedPeriodic;
+    outflowType             ShiftedPeriodic;
+    periodicShift           $periodicShift;
+
+    wallType WFB;        
+}
+
+WindFarm{
+    $TURBINES
+}
+
+Output{
+
+    welfordIntervalOutput $Precursor_VTK_Frequency;
+
+    VTK
+    {
+        writeFrequency $Precursor_VTK_Frequency;
+        ghostLayers    0;
+
+        baseFolder           $Precursor_VTK_OUT;
+        executionFolder      simulation_step;
+
+        fields {        
+            Velocity;
+            meanVelocity;
+            sumofsquares;
+            //meanEddyViscosity;
+        }
+    }
+}

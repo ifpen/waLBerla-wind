@@ -1,0 +1,116 @@
+name: Build and test with CUDA
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_long_tests:
+        description: 'Do you want to run the long tests?'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: nvidia/cuda:12.6.3-devel-rockylinux9
+      #options: --gpus all
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          dnf install -y epel-release && \
+          dnf install -y \
+            cmake \
+            diffutils \
+            gcc \
+            gcc-c++ \
+            git \
+            glibc-langpack-en \
+            openmpi \
+            openmpi-devel \
+            which \
+            xz && \
+          dnf clean all
+
+      - name: Install dependencies
+        run: |
+          # walberla
+          git clone https://github.com/lssfau/walberla.git
+          cd walberla
+          git switch --detach a8f8f183106e2ea415c3607f9ac693211d74fcab
+          cd ..
+
+          # pybind
+          git clone -b v2.13.6 https://github.com/pybind/pybind11.git
+
+          # pystencils and lbmpy
+          export PATH="${HOME}/.local/bin:${PATH}"
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv --version
+          uv python install 3.12
+          uv venv --clear --python 3.12
+          uv pip install pystencils==1.4 lbmpy==1.4 jinja2 pyvista scipy
+
+      - name: Build
+        run: |
+          BASEDIR="${PWD}"
+
+          export PATH="/usr/lib64/openmpi/bin:${PATH}"
+          export LD_LIBRARY_PATH="/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH}"
+          source .venv/bin/activate
+
+          mkdir build
+          cd build
+
+          export CUDAFLAGS="--expt-relaxed-constexpr"
+
+          cmake .. \
+            -DWALBERLA_DIR="${BASEDIR}/walberla" \
+            -DWALBERLA_PYBIND11_SOURCE_DIR="${BASEDIR}/pybind11" \
+            -DPython_ROOT_DIR="$(realpath `which python`)" \
+            -DWALBERLA_DOUBLE_ACCURACY="OFF" \
+            -DWALBERLA_BUILD_WITH_CODEGEN="ON" \
+            -DWALBERLA_BUILD_WITH_PYTHON="ON" \
+            -DWALBERLA_BUILD_WITH_CUDA="ON" \
+            -DCMAKE_CUDA_ARCHITECTURES="89;90" 2>&1 | tee ./cmake.log
+
+          make -j $(nproc --all) 2>&1 | tee ./build.log
+
+      - name: Test (short)
+        if: github.event_name != 'schedule' && github.event.inputs.run_long_tests != 'true'
+        run: |
+          export PATH="/usr/lib64/openmpi/bin:${PATH}"
+          export LD_LIBRARY_PATH="/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH}"
+          source .venv/bin/activate
+
+          cd build
+
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export FI_PROVIDER=sockets
+
+          ctest --output-on-failure -L "walberlawind::nonRegressionTests"
+
+      - name: Test (long)
+        if: github.event_name == 'schedule' || github.event.inputs.run_long_tests == 'true'
+        run: |
+          export PATH="/usr/lib64/openmpi/bin:${PATH}"
+          export LD_LIBRARY_PATH="/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH}"
+          source .venv/bin/activate
+
+          cd build
+
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export FI_PROVIDER=sockets
+
+          ctest --output-on-failure -L "walberlawind"

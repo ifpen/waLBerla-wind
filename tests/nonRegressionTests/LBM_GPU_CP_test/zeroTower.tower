@@ -1,0 +1,3 @@
+// Relative Position  | Tower radius | Lift | Drag // Radius starts from tower root, ends at tower top
+0.0      0.0     0.0         0.0   0.0   0.0         3.000   Cylinder.foil    //NOTE for testing purposes 0.000     0.350
+0.0      0.0     0.000001    0.0   0.0   0.0         1.935   Cylinder.foil    //NOTE for testing purposes 0.000     0.200

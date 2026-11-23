@@ -1,0 +1,185 @@
+DomainSetup
+{
+    domainSize    < 120, 30, 15>;
+
+    loadSnapshot            0;
+    storeSnapshot           0;
+    snapshotFrequency       1000;
+    snapshotBaseFolder      snapshot;
+    snapshotConfigFile      TurbineSnapshot.config;
+    snapshotBlockforestFile TurbineSnapshot.forest;
+    snapshotPdfFile         TurbineSnapshot.pdf;
+}
+
+Parameters
+{
+    initialVelocity < 0.05773502691896259, 0, 0 >;
+    timesteps              2000;
+    concurrentStart        1000;
+    
+    length_SI              0.15;
+    length_LU              5;
+
+    velocity_SI            2.5;
+    velocity_LU            0.05773502691896259;
+
+    viscosity_SI           1.82e-05;
+    density_SI             1.225;
+
+    gaussianSigma     2.0;
+
+    useGui 0;
+    remainingTimeLoggerFrequency 5; // in seconds
+
+    innerOuterSplit < 8, 1, 1>;     // slice-thickness that 'outer'-kernels process when overlapping
+    gpuBlockSize < 64, 1, 1>;
+
+    velocityFilterWidth 0.001;
+    referenceHeight_LU 4.1499999999999995;
+    samplingHeight_LU  2;
+
+    roughnessLengthRatio 6.667e-05;                // z0 / zHub / C_l
+    kappa 0.42;
+}
+
+Initialisation {
+    type asmuth; //uniform; // asmuth;
+    initialVelocity <0.05773502691896259, 0, 0>;
+}
+
+PrecursorBoundaries
+{
+    setup                   Open;
+
+    inflowType              shiftedPeriodic;
+    outflowType             shiftedPeriodic;
+
+    inflowVelocity          <0.05773502691896259, 0, 0>;
+    outflowPressure         1.0;
+
+    wallType WFB;
+}
+
+
+ConcurrentBoundaries
+{
+    setup                   Open;
+    wallType WFB;
+    
+    inflowType              UniformInflow; // Will be erased by Concurrent
+    outflowType             Outflow;
+
+    inflowVelocity          <0.05773502691896259, 0, 0>;
+    outflowPressure         1.0;
+}
+
+
+WindFarm{    
+    Turbine1
+	{
+	    basePoint             <22.5,15.0,4.1499999999999995>;
+	    diameter_LU             5;
+	    hubRotationalVelocity       <0,0,0.0>;
+	    
+	    towerDescription   zeroTower.tower;
+	    bladeDescription   zeroBlade.blade;
+	    
+	    towerEffect     0;
+	    nacelleEffect   0;
+	    tipLoss         0;
+	    nPointsBlades   50;
+	    nPointsTower    20;
+	    nBlades         3;
+	    nacelleYaw      0.0;
+	    hubRadius_SI    0.0;
+	    hubDeport_SI    0.0;
+	    hubTilt         0.0;
+	    bladePitch      0.0;
+	    bladePrecone    0.0;
+	    
+	    aeroModel       rotorDisk;
+	    rotorDrag       0.8248;
+	    
+	    towerController None;
+	    hubController None;
+	}	
+}
+
+PrecursorOutput{
+
+    welfordIntervalOutput 2000;
+
+    VTK
+    {
+        writeFrequency 2000;
+        ghostLayers    0;
+
+        baseFolder           Precursor_VTK_Out;
+        executionFolder      simulation_step;
+
+        inclusion_filters {
+            Plane {
+                point <0,15,0>;
+                normal <0,1,0>;
+                maxDistance 1;
+            }
+
+            Plane {
+                point <0,0,4.1499999999999995>;
+                normal <0,0,1>;
+                maxDistance 1;
+            }
+
+            Plane {
+                point <35,0,0>;
+                normal <1,0,0>;
+                maxDistance 1;
+            }
+        }
+
+        fields {
+            Velocity;
+        }
+    }
+}
+
+ConcurrentOutput{
+
+    welfordIntervalOutput 1000;
+
+    VTK
+    {
+        writeFrequency 1000;
+        ghostLayers    0;
+
+        baseFolder           Concurrent_VTK_Out;
+        executionFolder      simulation_step;
+
+        inclusion_filters {
+            Plane {
+                point <0,15,0>;
+                normal <0,1,0>;
+                maxDistance 1;
+            }
+
+            Plane {
+                point <0,0,4.1499999999999995>;
+                normal <0,0,1>;
+                maxDistance 1;
+            }
+
+            Plane {
+                point <35,0,0>;
+                normal <1,0,0>;
+                maxDistance 1;
+            }
+        }
+
+        fields {
+            Velocity;
+            meanVelocity;
+            sumofsquares;
+            Force;
+        }
+    }
+}
