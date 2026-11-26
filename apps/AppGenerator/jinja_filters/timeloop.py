@@ -148,17 +148,6 @@ class Timeloop:
                                                                                              welford_output=self.welford_output,
                                                                                              timeloop_name=self.name)), is_sweep=False))
 
-        if self.welford_output.active:
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Output Sweep", self.welford_output.reset(19)), is_sweep=False))
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Output Sweep", self.welford_output.lambda_name()), is_sweep=True))
-
-        if self.welford_eddy_viscosity.active:
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Eddy Viscosity Sweep", self.welford_eddy_viscosity.reset(19)), is_sweep=False))
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Eddy Viscosity Sweep", self.welford_eddy_viscosity.lambda_name()), is_sweep=True))
-
-        if self.welford_strain_rate.active:
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Strain Rate Sweep", self.welford_strain_rate.reset(19)), is_sweep=False))
-            result.append("\t" + self._add_function_nonuniform(function=("Welford Strain Rate Sweep", self.welford_strain_rate.lambda_name()), is_sweep=True))
 
         result.append(self._add_function_nonuniform(function=("Rotation", "[&](uint_t) { farm.callback(Component::Function::UPDATE_DISCRETISATION); }"), is_sweep=False))
         result.append(self._add_function_nonuniform(function=("Evaluate density and velocity", "farm.evaluateDensityAndVelocity"), is_sweep=True))
@@ -179,7 +168,14 @@ class Timeloop:
         if self.turbine_communication:
             result.append(self._add_function_nonuniform(function=("Reset communication data", "[&](uint_t) { farm.callback(Component::Function::RESET_COMMUNICATION_DATA); }"), is_sweep=False))
 
-        result.append(f"\n{self.recursive_timestep_name}.addRefinementToTimeLoop( {self.name} );")
+        result.append(f"\n{self.recursive_timestep_name}.addRefinementToTimeLoop( {self.name} );\n")
+
+        if self.welford_output.active:
+            result.append(self.add_after_timestep(function=("Welford Output Sweep", self.welford_output.after_timestep_function())))
+        if self.welford_eddy_viscosity.active:
+            result.append(self.add_after_timestep(function=("Welford Eddy Viscosity Sweep", self.welford_eddy_viscosity.after_timestep_function())))
+        if self.welford_strain_rate.active:
+            result.append(self.add_after_timestep(function=("Welford Strain Rate Sweep", self.welford_strain_rate.after_timestep_function())))
 
         return "\n".join(result)
 

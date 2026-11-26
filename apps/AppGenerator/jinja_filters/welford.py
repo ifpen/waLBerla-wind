@@ -59,14 +59,36 @@ class Welford:
         variable = self.basename[0].lower() + self.basename[1:]
         return f"{variable}Lambda"
 
+    def after_timestep_function(self):
+        """Counter update/reset followed by the Welford sweep on all blocks, as one void() function.
+
+        Used for refined grids: added with addFuncAfterTimeStep it runs once per coarse time step,
+        so all levels are updated with the same counter (as post-collision function it would run
+        once per level and substep, which advances the shared counter several times per step)."""
+        result = ["[&]() {"]
+        result += self._reset_body()
+        result.append(f"\tfor ( auto & block : *blocks ) {{")
+        result.append(f"\t\t{self.lambda_name()}(&block);")
+        result.append(f"\t}}")
+        result.append(f"}}")
+        return "\n".join(result)
+
     def reset(self, indent: int):
 
         indent = " " * indent
 
+        result = [f"[&]({'' if self.grid == Grid.UNIFORM else 'uint_t'}){{"]
+        result += self._reset_body()
+        result.append(f"}}")
+
+        return f"\n{indent}".join(result)
+
+    def _reset_body(self):
+
         namespace = "field" if self.target == Target.CPU else "gpu"
         field_type = get_field_type(self.mean_field) if self.target == Target.CPU else "GPUField_T<real_t>"
 
-        result = [f"[&]({'' if self.grid == Grid.UNIFORM else 'uint_t'}){{"]
+        result = []
 
         result.append(f"\tif(welfordInterval && (uint_t({self.sweep_name()}.getCounter()) % welfordInterval == 0)){{")
         result.append(f"\t\t{self.sweep_name()}.setCounter(real_t(1));")
@@ -86,6 +108,5 @@ class Welford:
         result.append(f"\t}} else {{")
         result.append(f"\t\t{self.sweep_name()}.setCounter(real_t({self.sweep_name()}.getCounter() + 1));")
         result.append(f"\t}}")
-        result.append(f"}}")
 
-        return f"\n{indent}".join(result)
+        return result
