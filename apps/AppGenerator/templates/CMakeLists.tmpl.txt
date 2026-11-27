@@ -1,6 +1,6 @@
 
 waLBerla_link_files_to_builddir( *.prm )
-waLBerla_link_files_to_builddir( airfoil_data )
+waLBerla_link_files_to_builddir( airfoil* )
 waLBerla_link_files_to_builddir( *.blade )
 waLBerla_link_files_to_builddir( *.tower )
 waLBerla_link_files_to_builddir( *.ctrl )
