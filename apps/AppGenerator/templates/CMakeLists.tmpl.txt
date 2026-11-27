@@ -1,4 +1,4 @@
-
+{% set cmake_extension = "${source_extension}" if target == Target.GPU else source_extension %}
 waLBerla_link_files_to_builddir( *.prm )
 waLBerla_link_files_to_builddir( airfoil* )
 waLBerla_link_files_to_builddir( *.blade )
@@ -6,36 +6,45 @@ waLBerla_link_files_to_builddir( *.tower )
 waLBerla_link_files_to_builddir( *.ctrl )
 waLBerla_link_files_to_builddir( *.wd )
 
+{% if target == Target.GPU -%}
+if(WALBERLA_BUILD_WITH_HIP)
+  set(source_extension hip)
+  set_source_files_properties(main.cu PROPERTIES LANGUAGE HIP)
+elseif(WALBERLA_BUILD_WITH_CUDA)
+  set(source_extension cu)
+endif()
+
+{% endif -%}
 waLBerla_generate_target_from_python(
         NAME TurbineApp_{{target.name.lower()}}_{{grid.name.lower()}}_Generation
         FILE LBMGeneration.py
         OUT_FILES
         waLBerlaWind_KernelInfo.h
-        waLBerlaWind_SweepCollection.{{source_extension}} waLBerlaWind_SweepCollection.h
-        waLBerlaWind_StorageSpecification.{{source_extension}} waLBerlaWind_StorageSpecification.h
+        waLBerlaWind_SweepCollection.{{cmake_extension}} waLBerlaWind_SweepCollection.h
+        waLBerlaWind_StorageSpecification.{{cmake_extension}} waLBerlaWind_StorageSpecification.h
         waLBerlaWind_BoundaryCollection.h
-        waLBerlaWind_NoSlip.{{source_extension}} waLBerlaWind_NoSlip.h
-        waLBerlaWind_FreeSlip.{{source_extension}} waLBerlaWind_FreeSlip.h
+        waLBerlaWind_NoSlip.{{cmake_extension}} waLBerlaWind_NoSlip.h
+        waLBerlaWind_FreeSlip.{{cmake_extension}} waLBerlaWind_FreeSlip.h
         {% if generate_wfb -%}
-        waLBerlaWind_WFB.{{source_extension}} waLBerlaWind_WFB.h
+        waLBerlaWind_WFB.{{cmake_extension}} waLBerlaWind_WFB.h
         {% endif -%}
-        waLBerlaWind_UniformUBB.{{source_extension}} waLBerlaWind_UniformUBB.h
-        waLBerlaWind_LogLawUBB.{{source_extension}} waLBerlaWind_LogLawUBB.h
-        waLBerlaWind_Outflow.{{source_extension}} waLBerlaWind_Outflow.h
-        waLBerlaWind_DensityPackInfo.{{source_extension}} waLBerlaWind_DensityPackInfo.h
-        waLBerlaWind_VelocityPackInfo.{{source_extension}} waLBerlaWind_VelocityPackInfo.h
+        waLBerlaWind_UniformUBB.{{cmake_extension}} waLBerlaWind_UniformUBB.h
+        waLBerlaWind_LogLawUBB.{{cmake_extension}} waLBerlaWind_LogLawUBB.h
+        waLBerlaWind_Outflow.{{cmake_extension}} waLBerlaWind_Outflow.h
+        waLBerlaWind_DensityPackInfo.{{cmake_extension}} waLBerlaWind_DensityPackInfo.h
+        waLBerlaWind_VelocityPackInfo.{{cmake_extension}} waLBerlaWind_VelocityPackInfo.h
         {% if vtk_output -%}
         {% if Fields.MEAN_VELOCITY in field_map -%}
-        waLBerlaWind_{{welford_output_name}}.{{source_extension}} waLBerlaWind_{{welford_output_name}}.h
+        waLBerlaWind_{{welford_output_name}}.{{cmake_extension}} waLBerlaWind_{{welford_output_name}}.h
         {%- endif %}
         {% if Fields.SUM_OF_SQUARES in field_map -%}
-        waLBerlaWind_SoSResetter.{{source_extension}} waLBerlaWind_SoSResetter.h
+        waLBerlaWind_SoSResetter.{{cmake_extension}} waLBerlaWind_SoSResetter.h
         {%- endif %}
         {% if Fields.SUM_OF_CUBES in field_map -%}
-        waLBerlaWind_SoCResetter.{{source_extension}} waLBerlaWind_SoCResetter.h
+        waLBerlaWind_SoCResetter.{{cmake_extension}} waLBerlaWind_SoCResetter.h
         {%- endif %}
         {% if Fields.MEAN_EDDY_VISCOSITY in field_map -%}
-        waLBerlaWind_{{welford_eddy_viscosity_name}}.{{source_extension}} waLBerlaWind_{{welford_eddy_viscosity_name}}.h
+        waLBerlaWind_{{welford_eddy_viscosity_name}}.{{cmake_extension}} waLBerlaWind_{{welford_eddy_viscosity_name}}.h
         {%- endif %}
         {% endif -%}
         waLBerlaWind_PdfSetter.cpp waLBerlaWind_PdfSetter.h
@@ -46,13 +55,13 @@ waLBerla_generate_target_from_python(
         waLBerlaWind_MacroGetter.cpp waLBerlaWind_MacroGetter.h
         {%- endif %}
         {% if vtk_output and Fields.STRAIN_RATE in field_map -%}
-        waLBerlaWind_StrainRateWriter.{{source_extension}} waLBerlaWind_StrainRateWriter.h
+        waLBerlaWind_StrainRateWriter.{{cmake_extension}} waLBerlaWind_StrainRateWriter.h
         {% if Fields.MEAN_STRAIN_RATE in field_map -%}
-        waLBerlaWind_{{welford_strain_rate_name}}.{{source_extension}} waLBerlaWind_{{welford_strain_rate_name}}.h
+        waLBerlaWind_{{welford_strain_rate_name}}.{{cmake_extension}} waLBerlaWind_{{welford_strain_rate_name}}.h
         {%- endif %}
         {% endif -%}
         FlowDriverCollection.h
-        Drivers.h Drivers.{{source_extension}}
+        Drivers.h Drivers.{{cmake_extension}}
 )
 
 turbine_core_codegen_dependencies()

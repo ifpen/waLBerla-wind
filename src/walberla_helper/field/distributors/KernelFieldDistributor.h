@@ -126,8 +126,7 @@ namespace turbine_core {
             {
                 for( uint_t f = 0; f < baseField_->fSize(); ++f )
                 {
-#ifdef __CUDA_ARCH__
-                    //                    baseField_->get( curCell, f) += weighting * (*distributeValueBegin);
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
                                         atomicAdd(&(baseField_->get(curCell, f)), weighting * (*distributeValueBegin));
                                         __threadfence();
 #else

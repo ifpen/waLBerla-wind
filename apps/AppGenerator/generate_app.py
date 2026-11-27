@@ -138,7 +138,7 @@ with TurbineCodeGeneration() as ctx:
     env = Environment(loader=template_loader, undefined=StrictUndefined)
     add_turbine_filters_to_jinja_env(env, env.globals)
 
-    source_extension = source_extension(target, ctx.cuda, ctx.hip)
+    source_extension = source_extension(target)
 
     jinja_context = {
         'stencil': stencil,
