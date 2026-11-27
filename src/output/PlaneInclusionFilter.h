@@ -23,7 +23,10 @@
 
 #pragma once
 
+#include <cmath>
+
 #include <core/cell/CellSet.h>
+#include <core/math/Vector3.h>
 #include <domain_decomposition/IBlock.h>
 #include <domain_decomposition/StructuredBlockStorage.h>
 

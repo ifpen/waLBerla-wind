@@ -34,6 +34,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.cpp
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( TurbineApp_cpu_static_refinement main.cpp )
 target_link_libraries( TurbineApp_cpu_static_refinement
         PRIVATE walberla::core walberla::blockforest walberla::domain_decomposition walberla::field walberla::lbm

@@ -23,6 +23,14 @@
 
 #pragma once
 
+#include <filesystem>
+#include <iomanip>
+#include <memory>
+#include <sstream>
+#include <vector>
+
+#include <stencil/D3Q27.h>
+
 #include "output/TurbineBeforeFunctors.h"
 
 #include "LineOutputLine.h"

@@ -27,6 +27,15 @@
 #include <gpu/GPUField.h>
 #endif
 
+#include <algorithm>
+#include <fstream>
+#include <iomanip>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include <core/config/Config.h>
 #include <core/mpi/MPIWrapper.h>
 #include <core/mpi/Reduce.h>
 
@@ -44,20 +53,20 @@ namespace turbine_core {
 
             constexpr char comment_char[]{"///"};
 
-            void writePositionItem(std::ostringstream & oss, const real_t item) {
+            inline void writePositionItem(std::ostringstream & oss, const real_t item) {
                 const int precision = int(oss.precision());
                 oss << std::right << std::setw(positionWidth) << std::setfill(' ') << std::setprecision(4)
                     << std::fixed << item;
                 oss << std::setprecision(precision);
             }
 
-            std::string writeFieldItem(const real_t item) {
+            inline std::string writeFieldItem(const real_t item) {
                 std::ostringstream oss;
                 oss << std::right << std::setw(fieldWidth) << std::setfill(' ') << std::scientific << item;
                 return oss.str();
             }
 
-            std::string writeFieldIdentifier(const std::string & name, const std::string & post = "") {
+            inline std::string writeFieldIdentifier(const std::string & name, const std::string & post = "") {
                 std::ostringstream oss;
                 oss << std::right << std::setw(fieldWidth) << std::setfill(' ') << (name + post);
                 return oss.str();
@@ -73,6 +82,8 @@ namespace turbine_core {
             using FieldMap = std::map<Fields::Types, BlockDataID>;
             using Line = std::vector<Vector3<real_t>>;
             using BlockLocalLine = std::map<walberla::IBlock*, Line>;
+
+            HOST_PREFIX virtual ~LineOutputLineBase() {}
 
             HOST_PREFIX LineOutputLineBase( const walberla::Config::BlockHandle & config  )
                     : outputFrequency_(config.getParameter<uint_t>("outputFrequency", uint_t(1))),

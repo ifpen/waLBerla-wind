@@ -39,6 +39,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.${generate_extension}
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( TurbineLBM_GPU main.${gpu_extension} )
 target_link_libraries( TurbineLBM_GPU
         PRIVATE walberla::core walberla::blockforest walberla::domain_decomposition walberla::field walberla::gpu

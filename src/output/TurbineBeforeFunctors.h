@@ -23,10 +23,16 @@
 
 #pragma once
 
+#include <cmath>
+#include <functional>
 #include <memory>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include <timeloop/Timeloop.h>
+
+#include "wind_turbine_core/WalberlaDataTypes.h"
 
 namespace turbine_core {
 

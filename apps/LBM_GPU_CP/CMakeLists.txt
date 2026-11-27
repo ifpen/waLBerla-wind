@@ -40,6 +40,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.${gpu_extension}
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( TurbineLBM_GPU_CP main.${gpu_extension} )
 target_link_libraries( TurbineLBM_GPU_CP
         PRIVATE

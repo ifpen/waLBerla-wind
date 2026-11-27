@@ -25,6 +25,14 @@
 
 #include <ctime>
 
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <core/config/Config.h>
 #include <core/Hostname.h>
 #include <core/timing/TimingPool.h>
 #include <core/waLBerlaBuildInfo.h>

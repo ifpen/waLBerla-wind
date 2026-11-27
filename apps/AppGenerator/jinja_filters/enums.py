@@ -81,14 +81,11 @@ def to_field_type(field: Fields):
         raise ValueError(f"Field type for field {field} is not defined.")
 
 
-def source_extension(target, cuda, hip):
+def source_extension(target):
     if (target == Target.CPU):
         return "cpp"
     else:
-        if cuda:
-            return "cu"
-        elif hip:
-            return "hip"
+        return "cu"
 
 
 

@@ -64,8 +64,8 @@ namespace turbine_core {
         walberla::gpu::selectDeviceBasedOnMpiRank();
 
         size_t heapSize;
-        cudaDeviceGetLimit(&heapSize, cudaLimitMallocHeapSize);
-        cudaDeviceSetLimit(cudaLimitMallocHeapSize, heapSize * 20);
+        gpuDeviceGetLimit(&heapSize, gpuLimitMallocHeapSize);
+        gpuDeviceSetLimit(gpuLimitMallocHeapSize, heapSize * 20);
 
         walberla::logging::Logging::instance()->setLogLevel(walberla::logging::Logging::INFO);
 

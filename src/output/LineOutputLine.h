@@ -23,6 +23,13 @@
 
 #pragma once
 
+#include <memory>
+#include <tuple>
+#include <vector>
+
+#include <core/config/Config.h>
+
+#include "walberla_helper/field/Field.h"
 #include "LineOutputLineBase.h"
 
 namespace turbine_core {
@@ -31,7 +38,7 @@ namespace turbine_core {
 
 #ifdef __CUDACC__
 
-        GLOBAL_PREFIX void interpolateFieldDataOnGPU( const uint_t nPoints, Vector3<real_t> * points, blockforest::BlockInfo blockInfo,
+        GLOBAL_PREFIX inline void interpolateFieldDataOnGPU( const uint_t nPoints, Vector3<real_t> * points, blockforest::BlockInfo blockInfo,
                                                       field::Field<real_t> field, real_t * results ) {
 
             projectors::TrilinearFieldInterpolator <field::Field<real_t>> interpolator(blockInfo, &field);

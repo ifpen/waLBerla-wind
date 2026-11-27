@@ -23,12 +23,17 @@
 #define DEVICE_PREFIX __device__
 #define GLOBAL_PREFIX __global__
 #define CONSTANT_PREFIX __constant__
-#define MANAGED_PREFIX __managed__
 #define FORCEINLINE __forceinline__
 
+#if defined(WALBERLA_BUILD_WITH_HIP) && !defined(__HIP__)
+#define MANAGED_PREFIX
+#define LAUNCH_BOUNDS(maxThreadsPerBlock)
+#define ALIGN(n) __attribute__((aligned(n)))
+#else
+#define MANAGED_PREFIX __managed__
 #define LAUNCH_BOUNDS(maxThreadsPerBlock) __launch_bounds__(maxThreadsPerBlock)
-
 #define ALIGN(n) __align__(n)
+#endif
 
 #ifndef NDEBUG
 #define TURBINE_GPU_CHECK() { WALBERLA_GPU_CHECK(gpuPeekAtLastError()); WALBERLA_GPU_CHECK(gpuDeviceSynchronize()) }

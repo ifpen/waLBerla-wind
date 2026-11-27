@@ -11,6 +11,9 @@ function( generate_target_from_python )
     endif()
 
     get_filename_component(sourceFile ${PYGEN_FILE} ABSOLUTE )
+    file(GLOB_RECURSE generatorInputs CONFIGURE_DEPENDS
+         ${CMAKE_CURRENT_SOURCE_DIR}/templates/*
+         ${CMAKE_CURRENT_SOURCE_DIR}/jinja_filters/*.py)
 
     set (sourcePath "${CMAKE_CURRENT_SOURCE_DIR}/../${PYGEN_NAME}")
     set (generationPath "${CMAKE_CURRENT_BINARY_DIR}/${PYGEN_NAME}")
@@ -39,7 +42,7 @@ function( generate_target_from_python )
     file(MAKE_DIRECTORY "${generationPath}")
 
     add_custom_command(OUTPUT ${generatedWithAbsolutePath}
-            DEPENDS ${sourceFile}
+            DEPENDS ${sourceFile} ${generatorInputs}
             COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${WALBERLA_PYTHON_DIR}:$ENV{PYTHONPATH} ${Python_EXECUTABLE} ${sourceFile} -f ${generatedWithAbsolutePath} -c ${cmakeVars}
             WORKING_DIRECTORY "${generationPath}")
 

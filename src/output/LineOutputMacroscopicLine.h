@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <core/config/Config.h>
+
+#include "walberla_helper/field/Field.h"
 #include "LineOutputLineBase.h"
 
 namespace turbine_core {

@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_LIST_DIR}/AppGenerator/codegen_dependencies.cmake)
+
 add_subdirectory(AppGenerator EXCLUDE_FROM_ALL)
 
 add_subdirectory(LBM_CPU)
