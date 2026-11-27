@@ -36,6 +36,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.${source_extension}
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( BenchmarkApp_gpu_static_refinement main.cu )
 target_link_libraries( BenchmarkApp_gpu_static_refinement
         PRIVATE walberla::core walberla::blockforest walberla::domain_decomposition walberla::field walberla::lbm

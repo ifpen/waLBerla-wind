@@ -30,6 +30,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.cpp
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( TurbineLBM_CPU main.cpp )
 
 target_link_libraries(
