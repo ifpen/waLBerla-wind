@@ -23,8 +23,17 @@
 
 #pragma once
 
-#include <core/config/Config.h>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <vector>
 
+#include <blockforest/StructuredBlockForest.h>
+#include <core/config/Config.h>
+#include <field/FlagUID.h>
+#include <field/vtk/FlagFieldCellFilter.h>
+#include <field/vtk/VTKWriter.h>
 #include <vtk/VTKOutput.h>
 #include <vtk/ChainedFilter.h>
 

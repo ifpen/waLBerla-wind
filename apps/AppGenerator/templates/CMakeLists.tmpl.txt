@@ -55,6 +55,8 @@ waLBerla_generate_target_from_python(
         Drivers.h Drivers.{{source_extension}}
 )
 
+turbine_core_codegen_dependencies()
+
 add_executable( TurbineApp_{{target.name.lower()}}_{{grid.name.lower()}} main.{{source_extension}} )
 target_link_libraries( TurbineApp_{{target.name.lower()}}_{{grid.name.lower()}}
         PRIVATE walberla::core walberla::blockforest walberla::domain_decomposition walberla::field walberla::lbm

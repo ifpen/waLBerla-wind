@@ -46,6 +46,8 @@ namespace turbine_core {
                 LOG_LAW
             };
 
+            virtual ~DomainInitialisation() {}
+
             static Type toType(const std::string & identifier) {
 
                 auto id = string::toLowercase(identifier);

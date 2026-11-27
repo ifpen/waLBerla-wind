@@ -35,7 +35,7 @@ namespace turbine_core {
                                                  nComponents, nPointsComponentsForSpread);
             }
 
-            HOST_PREFIX ~TurbineCreator() {}
+            HOST_PREFIX virtual ~TurbineCreator() {}
 
         private:
 
